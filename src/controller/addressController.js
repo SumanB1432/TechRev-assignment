@@ -9,12 +9,12 @@ const isValid = (value) => {
   }
   let regex = /^[a-zA-Z]+$/;
   let pinRegex = /^[1-9][0-9]{5}$/;
-
+////////////////////////----------REATE ADDRESS---------------//////////////////////////////////
   const createAddress = async function (req,res){
     try{
     let data = req.body;
     let {city,dist,state,pincode,customerId} = data;
-
+/********************************VALIDATIONS **********************************************************/
     if(Object.keys(data).length==0){
         return res.status(400).send({status:false,message:"please provide data"})
     }
@@ -52,21 +52,21 @@ const isValid = (value) => {
         return res.status(400).send({status:false,message:`${customerId} is a invalid customerID`})
     }
     
-   let address = await addressModel.create(data);
+   let address = await addressModel.create(data); //CREATE IN DATABASE
    return res.status(201).send({status:true,data:address})
 }
 catch(err){
     return res.status(500).send({status:false,message:err.message})
 }
 
-    
 }
+///////////////////////-------------------UPDATE ADDRESS--------------------//////////////////////////////////////////
 const addressUpdate = async function(req,res){
     try {
         let data = req.body;
         let customerId = req.params.customerId;
         let addressId = req.params.addressId;
-
+/********************************VALIDATIONS **********************************************************/
         if(!Object.keys(data).length){
             return res.status(400).send({status:false,message:"please provide data for update"})
         }

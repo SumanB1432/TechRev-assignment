@@ -15,11 +15,13 @@ const isValidPassword = (password) => {
   let emailRegex = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/
   let phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/
 
-
+/////////////////////////////////------------CREATE CUSTOMER---------------------------//////////////////////////////////////////////////////////
   const createCustomer = async function(req,res){
     try{
     let data = req.body;
     let {fname,lname,email,password,phone} = data
+
+    /********************************VALIDATIONS **********************************************************/
     if(Object.keys(data).length==0){
         return res.status(400).send({status:false,message:"Please give some data to create customer"})
     }
@@ -39,10 +41,10 @@ if(!lname.trim().match(/^[a-zA-Z]+$/)){
 
 if (!isValid(email)) return res.status(400).send({ status: false, Message: "Please provide your email address" })
 
-const isRegisterEmail = await customerModel.findOne({ email: email })
+const isRegisterEmail = await customerModel.findOne({ email: email })//CHECK DUPLICASY
 
 if (isRegisterEmail) {
-return res.status(400).send({ status: false, message: "Email id already registered" })
+return res.status(400).send({ status: false, message: "Email id already registered" }) 
 }
 
 if (!email.trim().match(emailRegex)){
@@ -57,7 +59,7 @@ if (!phone.trim().match(phoneRegex)){
 return res.status(400).send({ status: false, message: "Please enter valid pan -Indian phone number" })
 }
 
-const isRegisterPhone = await customerModel.findOne({ phone: phone })
+const isRegisterPhone = await customerModel.findOne({ phone: phone })//CHECK DUPLICASY
 
  if (isRegisterPhone) {
     return res.status(400).send({ status: false, message: "phone number is already registered" })
@@ -66,7 +68,7 @@ if (!isValidPassword(password)){
  return res.status(400).send({ status: false,message: "Please provide a valid password ,Password should be of 8 - 15 characters", })
     }
 
-    let customer = await customerModel.create(data);
+    let customer = await customerModel.create(data); //CREATE CUSTOMER
     return res.status(201).send({status:true,data:customer});
 }
 catch(err){
@@ -74,12 +76,14 @@ catch(err){
 }
     
   }
-  /////////////-------LOGIN-------------------////////////////////////////////////
+  ////////////////////////////////////////////////-------LOGIN-------------------////////////////////////////////////
   let login = async function (req, res) {
     try {
   
       let data = req.body;
       const { email, password } = data;
+
+      /********************************VALIDATIONS **********************************************************/
   
       if (!Object.keys(data).length) {
         return res.status(400).send({ status: false, message: "email & password must be given" });
@@ -111,7 +115,7 @@ catch(err){
   
       let token = jwt.sign(
         {
-          customerId: checkCustomer._id.toString(),
+          customerId: checkCustomer._id.toString(),  //CREATE JWT TOKEN
           iat: createTime,
           exp: expTime,
         },
@@ -126,7 +130,7 @@ catch(err){
     }
   };
 
-  ////////------------GET CUSTOMER------------------/////////////////////////////////
+  //////////////////////////////////////------------GET CUSTOMER------------------/////////////////////////////////
 
 const listOfCustomer = async function (req,res){
     try{
@@ -156,11 +160,11 @@ catch(err){
 }
 }
 
-///////////////-------------GET BY ID---------------------////////////////////
+//////////////////////////////////////////////////////-------------GET BY ID---------------------////////////////////
 const getCustomerById = async function (req,res){
     try {
         let customerId = req.params.customerId;
-
+ /********************************VALIDATIONS **********************************************************/
         if(!customerId){
             return res.status(400).send({status:false,message:"please provide customerId"})
         }
@@ -189,7 +193,7 @@ const getCustomerById = async function (req,res){
     }
 
 }
-////////----delete customer------//////////////////////
+///////////////////////////////////////////////////////////----delete customer------//////////////////////////////////////////////////
 
 const deleteCustomer = async function(req,res){
     try {
@@ -212,11 +216,13 @@ const deleteCustomer = async function(req,res){
         return res.status(500).send({status:false,message:err.message})
     }
 }
+////////////////////////////////------------UPDATE CUSTOMER--------------------/////////////////////////////////////////////////
 
 const updateCustomer = async function(req,res){
     try{
     let data = req.body;
     let customerId = req.params.customerId;
+    /********************************VALIDATIONS **********************************************************/
     if(Object.keys(data).length==0){
         return res.status(400).send({status:false,message:"Please provide data to update details"});
     }
@@ -248,7 +254,7 @@ const updateCustomer = async function(req,res){
         if(!isValid(data.email) || typeof data.email!="string" || !data.email.trim().match(emailRegex) ){
             return res.status(400).send({status:false,message:"please provide a valid email"})
         }
-        let getEmail = await customerModel.findOne({email:data.email,isDeleted:false});
+        let getEmail = await customerModel.findOne({email:data.email,isDeleted:false}); //CHECK DUPLICASY
 
         if(getEmail !=undefined){
             return res.status(400).send({status:false,message:`${data.email} is already registered`})
@@ -265,7 +271,7 @@ const updateCustomer = async function(req,res){
         if(!isValid(data.phone) || typeof data.phone!="number" || !phone.trim().match(phoneRegex)){
             return res.status(400).send({status:false,message:`${data.phone} is not valid`})
         }
-        let getPhone = await customerModel.findOne({phone:data,phone,isDeleted:false});
+        let getPhone = await customerModel.findOne({phone:data,phone,isDeleted:false});//CHECK DUPLICASY
         if(getPhone){
             return res.status(400).send({status:false,message:"This phone no is already registered"})
         }
