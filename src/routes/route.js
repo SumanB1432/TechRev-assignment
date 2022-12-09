@@ -5,14 +5,14 @@ let addressController = require("../controller/addressController")
 let middleWare = require("../middleware/auth")
 
 
-router.post("/insertCustomer",customerController.createCustomer);
-router.post("/login",customerController.login);
-router.get("/selectCustomer",customerController.listOfCustomer);
-router.post("/selectCustomerById/:customerId",customerController.getCustomerById);
-router.post("/updateCustomer/:customerId",middleWare.Authentication,customerController.updateCustomer)
-router.post("/deleteCustomer/:customerId",middleWare.Authentication,customerController.deleteCustomer);
-router.post('/insertAddress',addressController.createAddress);
-router.put("/updateAddress/:customerId/:addressId",middleWare.Authentication,addressController.addressUpdate)
+router.post("/insertCustomer",customerController.createCustomer);//CREATE CUSTOMER
+router.post("/login",customerController.login);//LOGIN CUSTOMER
+router.get("/selectCustomer",customerController.listOfCustomer);//GET CUSTOMER DETAILS
+router.post("/selectCustomerById/:customerId",customerController.getCustomerById);//GET CUSTOMER DETAILS BY ID
+router.post("/updateCustomer/:customerId",middleWare.Authentication,customerController.updateCustomer)//UPDATE CUSTOMER DETAILS
+router.post("/deleteCustomer/:customerId",middleWare.Authentication,customerController.deleteCustomer);//DELETE CUSTOMER DETAILS
+router.post('/insertAddress',addressController.createAddress);//CREATE ADDRESS 
+router.put("/updateAddress/:customerId/:addressId",middleWare.Authentication,addressController.addressUpdate)//UPDATE ADDRESS
 
 
 
