@@ -1,4 +1,5 @@
 const { isValidObjectId, default: mongoose } = require("mongoose");
+let jwt = require("jsonwebtoken")
 const addressModel = require("../model/addressModel");
 const customerModel = require("../model/customerModel");
 
@@ -73,6 +74,57 @@ catch(err){
 }
     
   }
+  /////////////-------LOGIN-------------------////////////////////////////////////
+  let login = async function (req, res) {
+    try {
+  
+      let data = req.body;
+      const { email, password } = data;
+  
+      if (!Object.keys(data).length) {
+        return res.status(400).send({ status: false, message: "email & password must be given" });
+      }
+      
+      
+      if (!isValid(email)) {
+        return res.status(400).send({ status: false, messgage: "email is required " });
+      }
+  
+  
+      if (!isValid(password)) {
+        return res.status(400).send({ status: false, messsge: "password is required" });
+      }
+  
+      let checkCustomer = await customerModel.findOne({
+        email: email,
+        password: password,
+      });
+  
+      if (!checkCustomer) {
+        return res.status(401).send({ status: false, message: "email or password is not correct" });
+      }
+     
+  
+      let date = Date.now();
+      let createTime = Math.floor(date / 1000);
+      let expTime = createTime + 3000;
+  
+      let token = jwt.sign(
+        {
+          customerId: checkCustomer._id.toString(),
+          iat: createTime,
+          exp: expTime,
+        },
+        "whoAMi_Suman"
+      );
+  
+      res.setHeader("x-api-key", token);
+      return res.status(200).send({ status: true, message: "Success", data: { token: token } });
+    } 
+    catch (err) {
+      res.status(500).send({ status: false, message: err.message });
+    }
+  };
 
   ////////------------GET CUSTOMER------------------/////////////////////////////////
 
@@ -161,4 +213,79 @@ const deleteCustomer = async function(req,res){
     }
 }
 
-  module.exports={createCustomer,listOfCustomer,getCustomerById,deleteCustomer}
+const updateCustomer = async function(req,res){
+    try{
+    let data = req.body;
+    let customerId = req.params.customerId;
+    if(Object.keys(data).length==0){
+        return res.status(400).send({status:false,message:"Please provide data to update details"});
+    }
+
+    if(!customerId){
+        return res.status(400).send({status:false,status:"please procide customerId"})
+    }
+    if(!mongoose.isValidObjectId(customerId)){
+        return res.status(400).send({status:false,message:`${customerId} is a invalid Id`})
+    }
+
+    let getCustomer = await customerModel.findOne({_id:customerId,isDeleted:false});
+    if(!getCustomer){
+        return res.status(404).send({status:false,message:"No such customer exist"})
+    }
+
+    if(data.fname!=undefined){
+        if(!isValid(data.fname) || typeof data.fname!="string" || !data.fname.trim().match(/^[a-zA-Z]+$/) ){
+            return res.status(400).send({status:false,message:"please provide a valid first_name"})
+        }
+        
+    }
+    if(data.lname !=undefined){
+        if(!isValid(data.lname) || typeof data.lname!="string" || !data.lname.trim().match(/^[a-zA-Z]+$/) ){
+            return res.status(400).send({status:false,message:"please provide a valid last_name"})
+        }
+    }
+    if(data.email !=undefined){
+        if(!isValid(data.email) || typeof data.email!="string" || !data.email.trim().match(emailRegex) ){
+            return res.status(400).send({status:false,message:"please provide a valid email"})
+        }
+        let getEmail = await customerModel.findOne({email:data.email,isDeleted:false});
+
+        if(getEmail !=undefined){
+            return res.status(400).send({status:false,message:`${data.email} is already registered`})
+        }
+
+    }
+    if(data.password!=undefined){
+        if(!isValid(data.password) || typeof data.password!="string" || !isValidPassword(data.password) ){
+            return res.status(400).send({status:false,message:"please provide a valid password/Please provide a valid password ,Password should be of 8 - 15 characters"})
+        }
+    }
+
+    if(data.phone!=undefined){
+        if(!isValid(data.phone) || typeof data.phone!="number" || !phone.trim().match(phoneRegex)){
+            return res.status(400).send({status:false,message:`${data.phone} is not valid`})
+        }
+        let getPhone = await customerModel.findOne({phone:data,phone,isDeleted:false});
+        if(getPhone){
+            return res.status(400).send({status:false,message:"This phone no is already registered"})
+        }
+    }
+
+    const updateCustomer = await customerModel.findByIdAndUpdate({_id:customerId},{
+        fname:data.fname,
+        lname:data.lname,
+        email:data.email,
+        password:data.password,
+        phone:data.phone
+    },{new:true,upsert:true});
+    return res.status(200).send({status:true,message:"updated successfully",data:updateCustomer})
+}
+catch(err){
+    return res.status(500).send({status:false,message:err.message})
+}
+
+
+
+}
+
+  module.exports={createCustomer,listOfCustomer,getCustomerById,deleteCustomer,login,updateCustomer}
